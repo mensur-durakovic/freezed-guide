@@ -12,15 +12,9 @@ void main() {
 Future<List<User>> fetchUsersData() async {
   final dio = Dio();
   final response = await dio.get('https://jsonplaceholder.typicode.com/users');
-  print("response status code ${response.statusCode}");
   if (response.statusCode == 200) {
-    Iterable l = response.data;
-
-    List<User> posts = List<User>.from(l.map((model) {
-      print(model);
-      return User.fromJson(model);
-    }));
-    return posts;
+    Iterable userList = response.data;
+    return List<User>.from(userList.map((userJson) => User.fromJson(userJson)));
   } else {
     throw Exception("An error occurred on fetching users data!");
   }
@@ -57,19 +51,21 @@ class MyHomePage extends StatelessWidget {
             return ListView.builder(
               itemCount: snapshot.data!.length,
               itemBuilder: (BuildContext context, int index) {
-                return Container(
-                  height: 50,
-                  color: Colors.white,
-                  child: Center(
-                    child: Text(snapshot.data![index].name),
-                  ),
+                final user = snapshot.data![index];
+                return ListTile(
+                  title: Text(user.name),
+                  subtitle: Text(
+                      '${user.address!.street}, ${user.address!.city}, ${user.address!.zipcode}'),
+                  tileColor: Colors.white,
                 );
               },
             );
           } else if (snapshot.hasError) {
             return Text(snapshot.error.toString());
           }
-          return const CircularProgressIndicator();
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
         },
       ),
     );
